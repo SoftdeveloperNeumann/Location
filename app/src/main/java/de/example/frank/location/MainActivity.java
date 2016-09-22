@@ -5,11 +5,9 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -19,9 +17,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import java.security.Permissions;
-import java.util.List;
-
 public class MainActivity extends Activity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -30,6 +25,7 @@ public class MainActivity extends Activity {
     private TextView textview;
     private String provider;
     private Button button;
+    private Button weiter;
 
     // These are required for GPS services.
     private static LocationManager manager;
@@ -42,31 +38,11 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         textview = (TextView) findViewById(R.id.textview);
         button = (Button) findViewById(R.id.button);
-//        if (!isPermissionGranted()) {
-//            return;
-//        }
+        weiter = (Button) findViewById(R.id.weiter);
+
         // LocationManager-Instanz ermitteln
         manager = (LocationManager) getSystemService(LOCATION_SERVICE);
-//        // Liste mit Namen aller Provider erfragen
-//        List<String> providers = manager.getAllProviders();
-//
-//        for (String name : providers) {
-//
-//            LocationProvider lp = manager.getProvider(name);
-//            Log.d(TAG,
-//                    lp.getName() + " --- isProviderEnabled(): "
-//                            + manager.isProviderEnabled(name));
-//            Log.d(TAG, "requiresCell(): " + lp.requiresCell());
-//            Log.d(TAG, "requiresNetwork(): " + lp.requiresNetwork());
-//            Log.d(TAG, "requiresSatellite(): " + lp.requiresSatellite());
-//        }
-//        // Provider mit grober Auflösung
-//        // und niedrigen Energieverbrauch
-//        Criteria criteria = new Criteria();
-//        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
-//        criteria.setPowerRequirement(Criteria.POWER_LOW);
-//        provider = manager.getBestProvider(criteria, true);
-//        Log.d(TAG, provider);
+
         // LocationListener-Objekt erzeugen
         listener = new LocationListener() {
             // When turned on or off.
@@ -101,14 +77,7 @@ public class MainActivity extends Activity {
 
         initRights();
 
-        // Umwandlung von String- in double-Werte
-//        Location locNuernberg = new Location(LocationManager.GPS_PROVIDER);
-//        double latitude = Location.convert("49:27");
-//        locNuernberg.setLatitude(latitude);
-//        double longitude = Location.convert("11:5");
-//        locNuernberg.setLongitude(longitude);
-//        Log.d(TAG, "latitude: " + locNuernberg.getLatitude());
-//        Log.d(TAG, "longitude: " + locNuernberg.getLongitude());
+
     }
 
     private void initRights() {
@@ -140,65 +109,28 @@ public class MainActivity extends Activity {
         super.onStart();
         Log.d(TAG, "onStart()");
 
-//        if (isPermissionGranted()) {
-//            manager.requestLocationUpdates(provider, 3000, 0.001f, listener);
-//        }
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause()");
-//        if (isPermissionGranted()) {
-//            manager.removeUpdates(listener);
-//        }
     }
-//    private boolean isPermissionGranted() {
-//        boolean ret = false;
-//        Log.d(TAG, "Permission Wert: ACCESS_FINE_LOCATION   = " + Manifest.permission.ACCESS_FINE_LOCATION);
-//        Log.d(TAG, "Permission Wert: ACCESS_COARSE_LOCATION = " + Manifest.permission.ACCESS_COARSE_LOCATION);
-//        Log.d(TAG, "Permission Wert: PERMISSION_GRANTED     = " + PackageManager.PERMISSION_GRANTED);
-//
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            Log.d(TAG, "Permission fehlt");
-//            ActivityCompat.requestPermissions(this,
-//                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-//                    REQUEST_LOCATION);
-//            ActivityCompat.requestPermissions(this,
-//                    new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-//                    1);
-//
-//            // TODO: Consider calling
-//            //    ActivityCompat#requestPermissions
-//            // here to request the missing permissions, and then overriding
-//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//            //                                          int[] grantResults)
-//            // to handle the case where the user grants the permission. See the documentation
-//            // for ActivityCompat#requestPermissions for more details.
-//            //  return;
-//            ret = true;
-//        }
-//        Log.d(TAG, "Permission da");
-//        return ret;
-//    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
             case 10:
                 Log.d(TAG, "onRequestPermissionsResult = 10");
-                if (grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "grantResults contains PERMISSION_GRANTED");
                     configureButton();
                 }
                 return;
         }
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        if (requestCode == REQUEST_LOCATION){
-//            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//
-//            }
-//        }
+
     }
 
     private void configureButton() {
@@ -207,8 +139,39 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                 // provider, minTime (refresh in msec), minDistance (>0 min m meters), locationListener
-                manager.requestLocationUpdates("gps", 5000, 0, listener);
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+                manager.requestLocationUpdates("network", 5000, 0, listener);
                 Log.d(TAG, "setOnClickListener manager.requestLocationUpdates");
+
+            }
+
+        });
+        weiter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, MapsActivity.class);
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+                intent.putExtra("Lat", manager.getLastKnownLocation("network").getLatitude());
+                intent.putExtra("Lon" , manager.getLastKnownLocation("network").getLongitude());
+                startActivity(intent);
             }
         });
     }
