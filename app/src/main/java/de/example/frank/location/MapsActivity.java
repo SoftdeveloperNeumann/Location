@@ -1,12 +1,18 @@
 package de.example.frank.location;
 
-import android.support.v4.app.FragmentActivity;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -37,10 +43,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        Intent intent = getIntent();
+        LatLng position = new LatLng(intent.getDoubleExtra("Lat", -34), intent.getDoubleExtra("Lon", 151));
+        LatLng sidney = new LatLng(-34, 151);
+        mMap.addMarker(new MarkerOptions().position(position).title("Hier bin ich, so ungefähr").icon(
+                BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
+        ));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+        mMap.addMarker(new MarkerOptions().position(sidney).title("Hier bin ich, so ungefähr").
+                icon(BitmapDescriptorFactory.fromResource(R.drawable.icon)));
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setCompassEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+            return;
+        }
+
+        mMap.setMyLocationEnabled(true);
+
+        CameraUpdate cu1 = CameraUpdateFactory.newLatLngZoom(sidney,10.0f);
+        //Parameter: Position,Zoom, Orientierung, Blickwinkel
+        CameraUpdate cu2 = CameraUpdateFactory.newCameraPosition(new CameraPosition(sidney,10,20,10));
+
+        mMap.animateCamera(cu2);
+
     }
 }
